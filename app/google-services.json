@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "259404788122",
+    "firebase_url": "https://jorbichat.firebaseio.com",
+    "project_id": "jorbichat",
+    "storage_bucket": "jorbichat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:259404788122:android:d88955276a67c5c1",
+        "android_client_info": {
+          "package_name": "com.jorbital.jorbichat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "259404788122-977un2nefuf9l12dgvntp8phvg9f6946.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jorbital.jorbichat",
+            "certificate_hash": "c6ab12bc493087ca9de613e952796bc38eaf494b"
+          }
+        },
+        {
+          "client_id": "259404788122-mqn67p3ntrejm9dej0o27lunl5pdgre0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARmdHS6pvfWwpN56XCkKiamvnXdKjQu5o"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "259404788122-mqn67p3ntrejm9dej0o27lunl5pdgre0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
