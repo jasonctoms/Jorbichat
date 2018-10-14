@@ -32,46 +32,46 @@ class MessagesAdapter internal constructor(options: FirebaseRecyclerOptions<Jorb
     }
 
     inner class MessageViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-        internal fun bind(viewHolder: MessageViewHolder, jorbichatMessage: JorbichatMessage) {
+        internal fun bind(vh: MessageViewHolder, message: JorbichatMessage) {
             progressBar.visibility = ProgressBar.INVISIBLE
 
             //if text isn't null, it is a normal message
-            if (jorbichatMessage.text != null) {
-                viewHolder.itemView.messageBody.text = jorbichatMessage.text
-                viewHolder.itemView.messageBody.visibility = TextView.VISIBLE
-                viewHolder.itemView.messageImage.visibility = ImageView.GONE
+            if (message.text != null) {
+                vh.itemView.messageBody.text = message.text
+                vh.itemView.messageBody.visibility = TextView.VISIBLE
+                vh.itemView.messageImage.visibility = ImageView.GONE
             }
             //if the image is not downloaded locally
-            else if (jorbichatMessage.imageUrl != null) {
-                val imageUrl = jorbichatMessage.imageUrl
+            else if (message.imageUrl != null) {
+                val imageUrl = message.imageUrl
                 if (imageUrl!!.startsWith("gs://")) {
                     val storageReference = FirebaseStorage.getInstance()
                             .getReferenceFromUrl(imageUrl)
                     storageReference.downloadUrl.addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             val downloadUrl = task.result!!.toString()
-                            Glide.with(viewHolder.itemView.messageImage.context)
+                            Glide.with(vh.itemView.messageImage.context)
                                     .load(downloadUrl)
-                                    .into(viewHolder.itemView.messageImage)
+                                    .into(vh.itemView.messageImage)
                         } else {
                             Log.w(TAG, "Getting download url was not successful.",
                                     task.exception)
                         }
                     }
                 } else {
-                    Glide.with(viewHolder.itemView.messageImage.context)
-                            .load(jorbichatMessage.imageUrl)
-                            .into(viewHolder.itemView.messageImage)
+                    Glide.with(vh.itemView.messageImage.context)
+                            .load(message.imageUrl)
+                            .into(vh.itemView.messageImage)
                 }
-                viewHolder.itemView.messageImage.visibility = ImageView.VISIBLE
-                viewHolder.itemView.messageBody.visibility = TextView.GONE
+                vh.itemView.messageImage.visibility = ImageView.VISIBLE
+                vh.itemView.messageBody.visibility = TextView.GONE
             }
 
-            viewHolder.itemView.messageFrom.text = jorbichatMessage.name
-            if (jorbichatMessage.photoUrl != null) {
-                Glide.with(viewHolder.itemView.messageAvatar.context)
-                        .load(jorbichatMessage.photoUrl)
-                        .into(viewHolder.itemView.messageAvatar)
+            vh.itemView.messageFrom.text = message.name
+            if (message.photoUrl != null) {
+                Glide.with(vh.itemView.messageAvatar.context)
+                        .load(message.photoUrl)
+                        .into(vh.itemView.messageAvatar)
             }
         }
     }

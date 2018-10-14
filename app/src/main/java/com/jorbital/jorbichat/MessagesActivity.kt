@@ -42,52 +42,52 @@ class MessagesActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailed
         const val ANONYMOUS = "anonymous"
     }
 
-    private var mUsername: String? = ANONYMOUS
-    private var mPhotoUrl: String? = null
-    private var mGoogleApiClient: GoogleApiClient? = null
+    private var username: String? = ANONYMOUS
+    private var photoUrl: String? = null
+    private var googleApiClient: GoogleApiClient? = null
 
-    private lateinit var mLinearLayoutManager: LinearLayoutManager
+    private lateinit var linearLayoutManager: LinearLayoutManager
 
     // Firebase instance variables
-    private lateinit var mFirebaseAuth: FirebaseAuth
-    private lateinit var mFirebaseAnalytics: FirebaseAnalytics
-    private var mFirebaseUser: FirebaseUser? = null
-    private var mFirebaseDatabaseReference: DatabaseReference? = null
-    private var mFirebaseAdapter: MessagesAdapter? = null
+    private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+    private var firebaseUser: FirebaseUser? = null
+    private var firebaseDatabaseReference: DatabaseReference? = null
+    private var firebaseAdapter: MessagesAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_messages)
 
         // Set default username is anonymous.
-        mUsername = ANONYMOUS
+        username = ANONYMOUS
 
         // Initialize Analytics for whole app
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         // Initialize Firebase Auth
-        mFirebaseAuth = FirebaseAuth.getInstance()
-        mFirebaseUser = mFirebaseAuth.currentUser
-        if (mFirebaseUser == null) {
+        firebaseAuth = FirebaseAuth.getInstance()
+        firebaseUser = firebaseAuth.currentUser
+        if (firebaseUser == null) {
             // Not signed in, launch the Login activity
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
         } else {
-            mUsername = mFirebaseUser?.displayName
-            if (mFirebaseUser?.photoUrl != null) {
-                mPhotoUrl = mFirebaseUser?.photoUrl.toString()
+            username = firebaseUser?.displayName
+            if (firebaseUser?.photoUrl != null) {
+                photoUrl = firebaseUser?.photoUrl.toString()
             }
         }
 
-        mGoogleApiClient = GoogleApiClient.Builder(this)
+        googleApiClient = GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build()
 
-        mLinearLayoutManager = LinearLayoutManager(this)
-        mLinearLayoutManager.stackFromEnd = true
-        messageRv.layoutManager = mLinearLayoutManager
+        linearLayoutManager = LinearLayoutManager(this)
+        linearLayoutManager.stackFromEnd = true
+        messageRv.layoutManager = linearLayoutManager
 
         setUpMessagesList()
 
@@ -95,13 +95,13 @@ class MessagesActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailed
     }
 
     public override fun onPause() {
-        mFirebaseAdapter?.stopListening()
+        firebaseAdapter?.stopListening()
         super.onPause()
     }
 
     public override fun onResume() {
         super.onResume()
-        mFirebaseAdapter?.startListening()
+        firebaseAdapter?.startListening()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -122,9 +122,9 @@ class MessagesActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailed
                 return true
             }
             R.id.sign_out_menu -> {
-                mFirebaseAuth.signOut()
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient)
-                mUsername = ANONYMOUS
+                firebaseAuth.signOut()
+                Auth.GoogleSignInApi.signOut(googleApiClient)
+                username = ANONYMOUS
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
                 return true
@@ -150,7 +150,7 @@ class MessagesActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailed
 
     private fun setUpMessagesList() {
         // New child entries
-        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().reference
+        firebaseDatabaseReference = FirebaseDatabase.getInstance().reference
         val parser = SnapshotParser { dataSnapshot ->
             val jorbichatMessage = dataSnapshot.getValue<JorbichatMessage>(JorbichatMessage::class.java)
             if (jorbichatMessage != null)
@@ -158,18 +158,18 @@ class MessagesActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailed
             jorbichatMessage!!
         }
 
-        val messagesRef = mFirebaseDatabaseReference!!.child(CONVERSATION_CHILD)
+        val messagesRef = firebaseDatabaseReference!!.child(CONVERSATION_CHILD)
         val options = FirebaseRecyclerOptions.Builder<JorbichatMessage>()
                 .setQuery(messagesRef, parser)
                 .build()
 
-        mFirebaseAdapter = MessagesAdapter(options, progressBar)
+        firebaseAdapter = MessagesAdapter(options, progressBar)
 
-        mFirebaseAdapter?.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+        firebaseAdapter?.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 super.onItemRangeInserted(positionStart, itemCount)
-                val messageCount = mFirebaseAdapter!!.itemCount
-                val lastVisiblePosition = mLinearLayoutManager.findLastCompletelyVisibleItemPosition()
+                val messageCount = firebaseAdapter!!.itemCount
+                val lastVisiblePosition = linearLayoutManager.findLastCompletelyVisibleItemPosition()
                 // If the recycler view is initially being loaded or the
                 // user is at the bottom of the list, scroll to the bottom
                 // of the list to show the newly added message.
@@ -179,14 +179,14 @@ class MessagesActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailed
             }
         })
 
-        messageRv.adapter = mFirebaseAdapter
+        messageRv.adapter = firebaseAdapter
     }
 
     private fun sendMessage() {
         val jorbichatMessage = JorbichatMessage(messageEditText.text.toString(),
-                mUsername!!,
-                mPhotoUrl!!, null/* no image */)
-        mFirebaseDatabaseReference!!.child(CONVERSATION_CHILD)
+                username!!,
+                photoUrl!!, null/* no image */)
+        firebaseDatabaseReference!!.child(CONVERSATION_CHILD)
                 .push().setValue(jorbichatMessage)
         messageEditText.setText("")
     }
@@ -219,14 +219,14 @@ class MessagesActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailed
                 if (data != null) {
                     val uri = data.data
                     Log.d(TAG, "Uri: " + uri!!.toString())
-                    val tempMessage = JorbichatMessage(null, mUsername!!, mPhotoUrl!!,
+                    val tempMessage = JorbichatMessage(null, username!!, photoUrl!!,
                             LOADING_IMAGE_URL)
-                    mFirebaseDatabaseReference!!.child(CONVERSATION_CHILD).push()
+                    firebaseDatabaseReference!!.child(CONVERSATION_CHILD).push()
                             .setValue(tempMessage) { databaseError, databaseReference ->
                                 if (databaseError == null) {
                                     val key = databaseReference.key
                                     val storageReference = FirebaseStorage.getInstance()
-                                            .getReference(mFirebaseUser!!.uid)
+                                            .getReference(firebaseUser!!.uid)
                                             .child(key!!)
                                             .child(uri.lastPathSegment!!)
 
@@ -242,7 +242,7 @@ class MessagesActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailed
             if (resultCode == Activity.RESULT_OK) {
                 val payload = Bundle()
                 payload.putString(FirebaseAnalytics.Param.VALUE, "sent")
-                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SHARE,
+                firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SHARE,
                         payload)
                 // Check how many invitations were sent and log.
                 val ids = AppInviteInvitation.getInvitationIds(resultCode,
@@ -251,7 +251,7 @@ class MessagesActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailed
             } else {
                 val payload = Bundle()
                 payload.putString(FirebaseAnalytics.Param.VALUE, "not sent")
-                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SHARE,
+                firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SHARE,
                         payload)
                 // Sending failed or it was canceled, show failure message to
                 // the user
@@ -269,9 +269,9 @@ class MessagesActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailed
             storageReference.downloadUrl
         }.addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val jorbichatMessage = JorbichatMessage(null, mUsername!!, mPhotoUrl!!,
+                val jorbichatMessage = JorbichatMessage(null, username!!, photoUrl!!,
                         task.result!!.toString())
-                mFirebaseDatabaseReference!!.child(CONVERSATION_CHILD).child(key)
+                firebaseDatabaseReference!!.child(CONVERSATION_CHILD).child(key)
                         .setValue(jorbichatMessage)
             } else {
                 Log.w(TAG, "Image upload task was not successful.",
